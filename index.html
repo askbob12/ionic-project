@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vertical Scrolling Calendar</title>
+    <link rel="stylesheet" href="./style.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ionic/core/css/ionic.bundle.css" />
+    <style>
+        /* General styling for the calendar */
+        ion-card {
+            margin: 10px;
+            border-radius: 10px;
+        }
+
+        ion-card-title {
+            font-size: 1.2rem;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #4a4a4a;
+        }
+
+        .week {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr); /* 7 days in a row */
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+
+        .week div {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 40px;
+            border-radius: 5px;
+            background-color: #f1f1f1;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #333;
+            cursor: pointer;
+        }
+
+        .week div.empty {
+            background-color: transparent;
+        }
+
+        .week div.past-day {
+            color: grey; /* Style past days in grey */
+        }
+
+        .week div.current-month-day {
+            color: red; /* Style current month's dates in red */
+        }
+
+        .week div:hover {
+            background-color: #0078d7; /* Highlight color on hover */
+            color: white;
+        }
+
+        ion-content {
+            --background: #fafafa; /* Soft background color for the app */
+        }
+
+        /* Sticky week header styling */
+        .sticky-weekdays {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color: #fff;
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            padding: 10px 0;
+            border-bottom: 1px solid #ccc;
+            text-align: center;
+            font-weight: bold;
+            color: #4a4a4a;
+        }
+
+        /* Enable vertical scrolling */
+        .scroll-container {
+            height: 100%; /* Ensures the content takes the full screen height */
+            overflow-y: scroll; /* Enable vertical scroll */
+        }
+    </style>
+</head>
+<body>
+    <ion-header>
+        <ion-toolbar>
+            <ion-title>Calendar</ion-title>
+        </ion-toolbar>
+    </ion-header>
+
+    <ion-content class="ion-padding scroll-container">
+        <!-- Sticky Weekdays Header -->
+        <div class="sticky-weekdays">
+            <div>Sun</div>
+            <div>Mon</div>
+            <div>Tue</div>
+            <div>Wed</div>
+            <div>Thu</div>
+            <div>Fri</div>
+            <div>Sat</div>
+        </div>
+
+        <!-- Calendar will be dynamically populated here -->
+        <div id="calendar-container"></div>
+    </ion-content>
+
+    <ion-footer>
+        <ion-toolbar>
+            <ion-title>Footer</ion-title>
+        </ion-toolbar>
+    </ion-footer>
+
+    <script>
+        const today = new Date();
+        const currentMonth = today.getMonth();
+        const currentYear = today.getFullYear();
+
+        const monthsName = [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ];
+
+        const calendarContainer = document.getElementById('calendar-container');
+
+        // Generate calendar starting from the current month to the next two years
+        for (let year = currentYear; year < currentYear + 3; year++) {
+            for (let month = (year === currentYear ? currentMonth : 0); month < 12; month++) {
+                // Create a card for each month
+                const monthCard = document.createElement('ion-card');
+
+                // Add the month and year as the card title
+                const monthTitle = document.createElement('ion-card-title');
+                monthTitle.textContent = `${monthsName[month]} ${year}`;
+                monthCard.appendChild(monthTitle);
+
+                // Calculate the first day of the month and number of days in the month
+                const firstDay = new Date(year, month, 1).getDay();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+                // Create weeks
+                let week = document.createElement('div');
+                week.classList.add('week');
+
+                // Fill in empty days before the first day of the month
+                for (let i = 0; i < firstDay; i++) {
+                    const emptyDay = document.createElement('div');
+                    emptyDay.classList.add('empty');
+                    week.appendChild(emptyDay);
+                }
+
+                // Add days of the month
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const dayElement = document.createElement('div');
+                    dayElement.textContent = `${day}`;
+
+                    // Highlight current month's dates in red
+                    if (year === currentYear && month === currentMonth) {
+                        dayElement.classList.add('current-month-day');
+                    }
+
+                    // Style past days in grey
+                    if (
+                        year < currentYear ||
+                        (year === currentYear && (month < currentMonth || (month === currentMonth && day < today.getDate())))
+                    ) {
+                        dayElement.classList.add('past-day');
+                    }
+
+                    // Add click event for date selection
+                    dayElement.addEventListener('click', () => {
+                        alert(`You selected: ${monthsName[month]} ${day}, ${year}`);
+                    });
+
+                    week.appendChild(dayElement);
+
+                    // If the week is complete, append it to the card and start a new week
+                    if ((firstDay + day) % 7 === 0 || day === daysInMonth) {
+                        monthCard.appendChild(week);
+                        week = document.createElement('div');
+                        week.classList.add('week');
+                    }
+                }
+
+                // Append the last week if it’s not empty
+                if (week.childNodes.length > 0) {
+                    monthCard.appendChild(week);
+                }
+
+                // Append the month card to the calendar container
+                calendarContainer.appendChild(monthCard);
+            }
+        }
+    </script>
+     <script type="module" src="https://cdn.jsdelivr.net/npm/@ionic/core/dist/ionic/ionic.esm.js"></script>
+     <script nomodule src="https://cdn.jsdelivr.net/npm/@ionic/core/dist/ionic/ionic.js"></script>
+</body>
+</html>
